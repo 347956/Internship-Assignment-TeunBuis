@@ -1,4 +1,5 @@
 ﻿using DAL.Models;
+using Internship_Assignment_Teunbuis.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data.Entity.Validation;
@@ -10,11 +11,13 @@ namespace Internship_Assignment_Teunbuis.Controllers
     public class MessageController : Controller
     {
         private readonly DataContext dataContext;
-        public MessageController(DataContext dataContext)
+        private readonly MessageQueue messageQueue;
+
+        public MessageController(DataContext dataContext, IConfiguration configuration)
         {
             this.dataContext = dataContext;
+            this.messageQueue = new MessageQueue(configuration);
         }
-
         [HttpGet]
         public async Task<ActionResult<List<MessageModel>>> get()
         {
@@ -26,7 +29,10 @@ namespace Internship_Assignment_Teunbuis.Controllers
         public async Task<ActionResult> PostMessage(MessageModel messageModel)
         {
             messageModel = CheckMessage(messageModel);
-            try
+            string messagequeue = "newmessagequeue";
+
+            await messageQueue.SendMessageAsync(messageModel, messagequeue);
+/*            try
             {                
                 dataContext.Messages.Add(messageModel);
                 await dataContext.SaveChangesAsync();
@@ -34,7 +40,7 @@ namespace Internship_Assignment_Teunbuis.Controllers
             catch(DbEntityValidationException e)
             {
                 Console.WriteLine(e);
-            }
+            }*/
             return Ok();
         }
 
@@ -48,7 +54,7 @@ namespace Internship_Assignment_Teunbuis.Controllers
             {
                 messageModel.Content = "N/A";
             }
-            if(messageModel.Date == null)
+            if(messageModel.Date.Equals(null))
             {
                 messageModel.Date = DateTime.Now;
             }

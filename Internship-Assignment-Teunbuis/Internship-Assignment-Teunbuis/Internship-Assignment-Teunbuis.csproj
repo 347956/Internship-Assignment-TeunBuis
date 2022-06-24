@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Internship_Assignment_Teunbuis</RootNamespace>
+    <UserSecretsId>b14a9d23-f4cf-4f40-8c26-bed67211cadf</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
