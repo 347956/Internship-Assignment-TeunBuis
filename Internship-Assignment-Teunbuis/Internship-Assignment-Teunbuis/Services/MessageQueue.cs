@@ -1,5 +1,4 @@
 ﻿using Microsoft.Azure.ServiceBus;
-using Microsoft.Extensions.Configuration;
 using System.Text;
 using System.Text.Json;
 
