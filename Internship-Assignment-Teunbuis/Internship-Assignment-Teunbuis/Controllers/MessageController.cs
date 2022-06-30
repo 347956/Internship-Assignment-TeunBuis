@@ -12,11 +12,13 @@ namespace Internship_Assignment_Teunbuis.Controllers
     {
         private readonly DataContext dataContext;
         private readonly MessageQueue messageQueue;
+        private readonly MessageSubscription subscription;
 
         public MessageController(DataContext dataContext, IConfiguration configuration)
         {
             this.dataContext = dataContext;
             this.messageQueue = new MessageQueue(configuration);
+            this.subscription = new MessageSubscription(dataContext, configuration);
         }
         [HttpGet]
         public async Task<ActionResult<List<MessageModel>>> get()
@@ -30,17 +32,10 @@ namespace Internship_Assignment_Teunbuis.Controllers
         {
             messageModel = CheckMessage(messageModel);
             string messagequeue = "newmessagequeue";
-
+            //sends a message to the service bus
             await messageQueue.SendMessageAsync(messageModel, messagequeue);
-/*            try
-            {                
-                dataContext.Messages.Add(messageModel);
-                await dataContext.SaveChangesAsync();
-            }
-            catch(DbEntityValidationException e)
-            {
-                Console.WriteLine(e);
-            }*/
+            //recieve messages from the servicebus
+            await subscription.RecieveMessageAsync(messagequeue);
             return Ok();
         }
 

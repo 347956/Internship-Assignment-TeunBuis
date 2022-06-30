@@ -18,8 +18,7 @@ builder.Services.AddDbContext<DataContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<IMessageQueue, MessageQueue>();
-builder.Services.AddHostedService<MessageConsumerService>();
-builder.Services.AddSingleton<ISubscriptionClient>();
+builder.Services.AddTransient<IMessageSubscription, MessageSubscription>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
