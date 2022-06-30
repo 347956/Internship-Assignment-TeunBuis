@@ -1,22 +1,21 @@
 ﻿using DAL.Models;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using System.Data.Entity.Validation;
 
 namespace Internship_Assignment_Teunbuis.Services
 {
     public class MessageSubscription : IMessageSubscription
     {
         private readonly IConfiguration config;
-        private readonly DataContext dataContext;
 
-        public MessageSubscription(DataContext dataContext, IConfiguration configuration)
+        public MessageSubscription( IConfiguration configuration)
         {
             this.config = configuration;
-            this.dataContext = dataContext;
         }
         public async Task RecieveMessageAsync(string newmessagequeue)
         {
-            MessageModel recieveMessage = new MessageModel();
             //sets the client
             var queueClient = new QueueClient(config.GetConnectionString("AzureServiceBus"), newmessagequeue, ReceiveMode.PeekLock, RetryPolicy.Default);
 
@@ -25,6 +24,7 @@ namespace Internship_Assignment_Teunbuis.Services
             {
                 var bodyButes = message.Body;
                 var ourMessage = System.Text.Encoding.UTF8.GetString(bodyButes);
+
                 Console.WriteLine($"Message recieved:[ {ourMessage} ]");
                 return Task.CompletedTask;
 

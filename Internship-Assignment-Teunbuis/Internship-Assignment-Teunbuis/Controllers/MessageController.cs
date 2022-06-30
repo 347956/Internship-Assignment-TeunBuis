@@ -18,7 +18,7 @@ namespace Internship_Assignment_Teunbuis.Controllers
         {
             this.dataContext = dataContext;
             this.messageQueue = new MessageQueue(configuration);
-            this.subscription = new MessageSubscription(dataContext, configuration);
+            this.subscription = new MessageSubscription(configuration);
         }
         [HttpGet]
         public async Task<ActionResult<List<MessageModel>>> get()
@@ -36,6 +36,15 @@ namespace Internship_Assignment_Teunbuis.Controllers
             await messageQueue.SendMessageAsync(messageModel, messagequeue);
             //recieve messages from the servicebus
             await subscription.RecieveMessageAsync(messagequeue);
+            try
+            {
+                dataContext.Messages.Add(messageModel);
+                await dataContext.SaveChangesAsync();
+            }
+            catch (DbEntityValidationException e)
+            {
+                Console.WriteLine(e);
+            }
             return Ok();
         }
 
