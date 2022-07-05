@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Data.Entity.Validation;
+using System.Net.WebSockets;
+using System.Text;
 
 namespace Internship_Assignment_Teunbuis.Controllers
 {
@@ -14,13 +16,15 @@ namespace Internship_Assignment_Teunbuis.Controllers
         private readonly DataContext dataContext;
         private readonly MessageQueue messageQueue;
         private readonly MessageSubscription subscription;
+        private readonly ILogger<MessageController> logger;
         private ChatService chatService;
 
-        public MessageController(DataContext dataContext, IConfiguration configuration)
+        public MessageController(DataContext dataContext, IConfiguration configuration, ILogger<MessageController> logger)
         {
             this.dataContext = dataContext;
             this.messageQueue = new MessageQueue(configuration);
             this.subscription = new MessageSubscription(configuration);
+            this.logger = logger;
             this.chatService = new ChatService();
         }
         [HttpGet]
@@ -28,6 +32,17 @@ namespace Internship_Assignment_Teunbuis.Controllers
         {
             List<MessageModel> messageModels = await dataContext.Messages.ToListAsync();
             return Ok(messageModels.OrderByDescending(messageModel => messageModel.Date));
+        }
+        [HttpGet("/ws")]
+        public async Task Get()
+        {
+            if (HttpContext.WebSockets.IsWebSocketRequest)
+            {
+                using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+                logger.Log(LogLevel.Information, "WebSocket connection established");
+                await Echo(webSocket);
+
+            }
         }
 
         [HttpPost]
@@ -50,6 +65,26 @@ namespace Internship_Assignment_Teunbuis.Controllers
             }
             await chatService.SendMessage(messageModel);
             return Ok();
+        }
+
+        private async Task Echo(WebSocket webSocket)
+        {
+            var buffer = new byte[1024 * 4];
+            var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            logger.Log(LogLevel.Information, "message recieved from Client");
+
+            while (!result.CloseStatus.HasValue)
+            {
+                var serverMsg = Encoding.UTF8.GetBytes($"Server: Hello. You said: {Encoding.UTF8.GetString(buffer)}");
+                await webSocket.SendAsync(new ArraySegment<byte>(serverMsg, 0, serverMsg.Length), result.MessageType, result.EndOfMessage, CancellationToken.None);
+                logger.Log(LogLevel.Information, "Message sent to Client");
+
+                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                logger.Log(LogLevel.Information, "Message received from Client");
+
+            }
+            await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+            logger.Log(LogLevel.Information, "WebSocket connection closed");
         }
 
         private MessageModel CheckMessage(MessageModel messageModel)

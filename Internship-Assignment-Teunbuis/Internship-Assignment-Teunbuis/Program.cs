@@ -41,4 +41,5 @@ app.UseAuthorization();
 app.MapControllers();
 app.UseRouting();
 app.MapHub<ChatService>("/chat");
+app.UseWebSockets();
 app.Run();
