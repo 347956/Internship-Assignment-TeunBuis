@@ -1,6 +1,7 @@
 ﻿using DAL.Models;
 using Internship_Assignment_Teunbuis.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Data.Entity.Validation;
 
