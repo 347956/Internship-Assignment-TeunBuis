@@ -8,7 +8,9 @@ namespace Internship_Assignment_Teunbuis.Services
     {
         public Task SendMessage(MessageModel messageModel)
         {
-            return Clients.All.SendAsync("RecieveMessage", messageModel.UserName, messageModel.Content);
+            string username = messageModel.UserName;
+            string message = messageModel.Content;
+            return Clients.All.SendAsync("RecieveMessage", username, message);
         }
     }
 }

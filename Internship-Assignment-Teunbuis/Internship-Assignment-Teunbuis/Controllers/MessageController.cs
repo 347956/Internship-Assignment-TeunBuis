@@ -14,12 +14,14 @@ namespace Internship_Assignment_Teunbuis.Controllers
         private readonly DataContext dataContext;
         private readonly MessageQueue messageQueue;
         private readonly MessageSubscription subscription;
+        private ChatService chatService;
 
         public MessageController(DataContext dataContext, IConfiguration configuration)
         {
             this.dataContext = dataContext;
             this.messageQueue = new MessageQueue(configuration);
             this.subscription = new MessageSubscription(configuration);
+            this.chatService = new ChatService();
         }
         [HttpGet]
         public async Task<ActionResult<List<MessageModel>>> get()
@@ -46,6 +48,7 @@ namespace Internship_Assignment_Teunbuis.Controllers
             {
                 Console.WriteLine(e);
             }
+            await chatService.SendMessage(messageModel);
             return Ok();
         }
 
